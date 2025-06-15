@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Habilidades del Equipo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --dark-text: #343a40;
+            --border-color: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow);
+            max-width: 900px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 2.2em;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: var(--dark-text);
+            margin-top: 30px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+            width: auto;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fefefe;
+        }
+
+        .question-section h3 {
+            color: var(--info-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            text-align: center;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+        }
+
+        .question p {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--dark-text);
+        }
+
+        .options label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            transition: all 0.2s ease-in-out;
+            background-color: #f1f3f5;
+        }
+
+        .options label:hover {
+            background-color: #e2e6ea;
+            border-color: var(--secondary-color);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            accent-color: var(--primary-color);
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #results-section {
+            display: none;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 2px solid var(--primary-color);
+            text-align: center;
+        }
+
+        #chart-container {
+            width: 80%;
+            max-width: 500px;
+            margin: 30px auto;
+            position: relative; /* Para el tooltip del gráfico */
+        }
+
+        .recommendations-category {
+            margin-top: 30px;
+            text-align: left;
+            background-color: #f1f7fe;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .recommendations-category h3 {
+            color: var(--primary-color);
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .recommendations-category ul {
+            list-style: disc;
+            padding-left: 25px;
+        }
+
+        .recommendations-category li {
+            margin-bottom: 8px;
+            color: var(--dark-text);
+        }
+
+        #global-message {
+            margin-top: 40px;
+            padding: 25px;
+            background-color: var(--success-color);
+            color: white;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+        }
+
+        /* Basic Chart.js responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            .chart-container {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diagnóstico de Habilidades Clave</h1>
+        <p style="text-align: center; margin-bottom: 30px; font-size: 1.1em; color: var(--secondary-color);">
+            Responde las siguientes preguntas para identificar tus fortalezas y áreas de oportunidad en distintas competencias clave. ¡Tu feedback es valioso para tu desarrollo!
+        </p>
+
+        <form id="skills-form">
+            <div class="question-section">
+                <h3>Comunicación Efectiva</h3>
+                <div class="question">
+                    <p>1. ¿Con qué frecuencia logras expresar tus ideas de forma clara y concisa en reuniones y conversaciones?</p>
+                    <div class="options">
+                        <label><input type="radio" name="comunicacion1" value="1"> Rara vez</label>
+                        <label><input type="radio" name="comunicacion1" value="2"> A veces</label>
+                        <label><input type="radio" name="comunicacion1" value="3"> Frecuentemente</label>
+                        <label><input type="radio" name="comunicacion1" value="4"> Siempre</label>
+                    </div>
+                </div>
+                <div class="question">
+                    <p>2. ¿Cómo manejas las conversaciones difíciles o los conflictos en el equipo?</p>
+                    <div class="options">
+                        <label><input type="radio" name="comunicacion2" value="1"> Las evito</label>
+                        <label><input type="radio" name="comunicacion2" value="2"> Me cuesta abordarlas</label>
+                        <label><input type="radio" name="comunicacion2" value="3"> Las abordo con algo de dificultad</label>
+                        <label><input type="radio" name="comunicacion2" value="4"> Las abordo de forma constructiva</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <h3>Resolución de Problemas</h3>
+                <div class="question">
+                    <p>3. Ante un problema inesperado, ¿cómo reaccionas?</p>
+                    <div class="options">
+                        <label><input type="radio" name="problemas1" value="1"> Me abrumo y no sé por dónde empezar</label>
+                        <label><input type="radio" name="problemas1" value="2"> Necesito mucha ayuda para encontrar soluciones</label>
+                        <label><input type="radio" name="problemas1" value="3"> Analizo la situación y propongo algunas soluciones</label>
+                        <label><input type="radio" name="problemas1" value="4"> Identifico la raíz del problema y genero soluciones innovadoras</label>
+                    </div>
+                </div>
+                <div class="question">
+                    <p>4. ¿Qué tan efectivo te consideras identificando la causa raíz de los problemas, en lugar de solo los síntomas?</p>
+                    <div class="options">
+                        <label><input type="radio" name="problemas2" value="1"> Nada efectivo</label>
+                        <label><input type="radio" name="problemas2" value="2"> Poco efectivo</label>
+                        <label><input type="radio" name="problemas2" value="3"> Moderadamente efectivo</label>
+                        <label><input type="radio" name="problemas2" value="4"> Muy efectivo</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <h3>Gestión del Tiempo y Productividad</h3>
+                <div class="question">
+                    <p>5. ¿Con qué frecuencia cumples con los plazos de tus tareas?</p>
+                    <div class="options">
+                        <label><input type="radio" name="tiempo1" value="1"> Rara vez</label>
+                        <label><input type="radio" name="tiempo1" value="2"> A veces</label>
+                        <label><input type="radio" name="tiempo1" value="3"> Frecuentemente</label>
+                        <label><input type="radio" name="tiempo1" value="4"> Siempre o casi siempre</label>
+                    </div>
+                </div>
+                <div class="question">
+                    <p>6. ¿Utilizas alguna técnica o herramienta para organizar tus tareas y prioridades?</p>
+                    <div class="options">
+                        <label><input type="radio" name="tiempo2" value="1"> No, me organizo sobre la marcha</label>
+                        <label><input type="radio" name="tiempo2" value="2"> A veces intento, pero no soy constante</label>
+                        <label><input type="radio" name="tiempo2" value="3"> Sí, pero podría ser más eficiente</label>
+                        <label><input type="radio" name="tiempo2" value="4"> Sí, utilizo herramientas y soy muy organizado/a</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <h3>Uso de Herramientas Digitales</h3>
+                <div class="question">
+                    <p>7. ¿Qué tan cómodo/a te sientes utilizando nuevas plataformas o software específicos de trabajo?</p>
+                    <div class="options">
+                        <label><input type="radio" name="digital1" value="1"> Muy incómodo/a, me cuesta mucho</label>
+                        <label><input type="radio" name="digital1" value="2"> Algo incómodo/a, necesito mucha ayuda</label>
+                        <label><input type="radio" name="digital1" value="3"> Cómodo/a, con algo de apoyo puedo manejarlas</label>
+                        <label><input type="radio" name="digital1" value="4"> Muy cómodo/a, aprendo rápidamente y me adapto</label>
+                    </div>
+                </div>
+                <div class="question">
+                    <p>8. ¿Con qué frecuencia utilizas las funciones avanzadas de herramientas como hojas de cálculo o presentaciones?</p>
+                    <div class="options">
+                        <label><input type="radio" name="digital2" value="1"> Rara vez o nunca</label>
+                        <label><input type="radio" name="digital2" value="2"> Ocasionalmente</label>
+                        <label><input type="radio" name="digital2" value="3"> Frecuentemente</label>
+                        <label><input type="radio" name="digital2" value="4"> Siempre que sea necesario</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <h3>Liderazgo y Colaboración</h3>
+                <div class="question">
+                    <p>9. ¿Qué tan proactivo/a eres al ofrecer ayuda o apoyo a tus compañeros de equipo?</p>
+                    <div class="options">
+                        <label><input type="radio" name="liderazgo1" value="1"> Rara vez</label>
+                        <label><input type="radio" name="liderazgo1" value="2"> A veces</label>
+                        <label><input type="radio" name="liderazgo1" value="3"> Frecuentemente</label>
+                        <label><input type="radio" name="liderazgo1" value="4"> Siempre</label>
+                    </div>
+                </div>
+                <div class="question">
+                    <p>10. ¿Cómo contribuyes a un ambiente de trabajo positivo y colaborativo?</p>
+                    <div class="options">
+                        <label><input type="radio" name="liderazgo2" value="1"> No mucho, prefiero trabajar solo/a</label>
+                        <label><input type="radio" name="liderazgo2" value="2"> Participo cuando se me pide</label>
+                        <label><input type="radio" name="liderazgo2" value="3"> Aporto ideas y participo activamente</label>
+                        <label><input type="radio" name="liderazgo2" value="4"> Promuevo activamente la colaboración y el espíritu de equipo</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button type="submit">Ver mis Resultados</button>
+            </div>
+        </form>
+
+        <div id="results-section">
+            <h2>Tu Perfil de Habilidades</h2>
+            <div id="chart-container">
+                <canvas id="skillsChart"></canvas>
+            </div>
+
+            <div id="recommendations">
+                </div>
+
+            <div id="global-message">
+                ¡Excelente trabajo al completar tu diagnóstico! Recuerda que el crecimiento es un viaje continuo. Colabora con tu equipo, comparte tus aprendizajes y juntos construirán un entorno de trabajo aún más fuerte y exitoso. ¡A seguir creciendo!
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.getElementById('skills-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
+
+            const categories = {
+                'Comunicación Efectiva': ['comunicacion1', 'comunicacion2'],
+                'Resolución de Problemas': ['problemas1', 'problemas2'],
+                'Gestión del Tiempo y Productividad': ['tiempo1', 'tiempo2'],
+                'Uso de Herramientas Digitales': ['digital1', 'digital2'],
+                'Liderazgo y Colaboración': ['liderazgo1', 'liderazgo2']
+            };
+
+            const scores = {};
+            let allAnswered = true;
+
+            // Calcular puntajes por categoría
+            for (const category in categories) {
+                let categoryScore = 0;
+                for (const questionName of categories[category]) {
+                    const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                    if (selectedOption) {
+                        categoryScore += parseInt(selectedOption.value);
+                    } else {
+                        allAnswered = false; // Marcar si alguna pregunta no fue respondida
+                        break;
+                    }
+                }
+                if (!allAnswered) break; // Si ya hay una sin responder, salir del bucle exterior
+                scores[category] = categoryScore;
+            }
+
+            if (!allAnswered) {
+                alert('Por favor, responde todas las preguntas antes de ver tus resultados.');
+                return;
+            }
+
+            // Mapeo de puntajes a una escala de 0-10 (ej: 2 preguntas, max 4 por pregunta = max 8. Queremos 0-10. (score/max_score_category) * 10)
+            const maxScorePerQuestion = 4;
+            const normalizedScores = {};
+            for (const category in scores) {
+                const numQuestions = categories[category].length;
+                const maxCategoryScore = numQuestions * maxScorePerQuestion;
+                normalizedScores[category] = (scores[category] / maxCategoryScore) * 10;
+            }
+
+            // Mostrar la sección de resultados
+            document.getElementById('skills-form').style.display = 'none';
+            const resultsSection = document.getElementById('results-section');
+            resultsSection.style.display = 'block';
+
+            // Dibujar el gráfico
+            renderChart(normalizedScores);
+
+            // Mostrar recomendaciones
+            displayRecommendations(normalizedScores);
+
+            // Scroll suave a la sección de resultados
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        let myChart; // Variable global para la instancia del gráfico
+
+        function renderChart(scores) {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+
+            // Destruir el gráfico anterior si existe
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'radar', // Un gráfico de radar es ideal para perfiles de habilidades
+                data: {
+                    labels: Object.keys(scores),
+                    datasets: [{
+                        label: 'Tu Nivel de Habilidad (0-10)',
+                        data: Object.values(scores),
+                        backgroundColor: 'rgba(0, 123, 255, 0.4)', // Color primario con transparencia
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(0, 123, 255, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(0, 123, 255, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)' // Líneas de ángulo más suaves
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: var('--dark-text')
+                            },
+                            suggestedMin: 0, // Escala de 0 a 10
+                            suggestedMax: 10,
+                            ticks: {
+                                beginAtZero: true,
+                                stepSize: 2, // Muestra ticks en 0, 2, 4, 6, 8, 10
+                                color: var('--secondary-color'),
+                                backdropColor: 'transparent' // Hace el fondo de los ticks transparente
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: var('--dark-text')
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.r.toFixed(1);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayRecommendations(scores) {
+            const recommendationsDiv = document.getElementById('recommendations');
+            recommendationsDiv.innerHTML = ''; // Limpiar recomendaciones anteriores
+
+            // Recomendaciones generales para cada categoría (puedes expandirlas y personalizarlas mucho más)
+            const allRecommendations = {
+                'Comunicación Efectiva': [
+                    'Practica la escucha activa: Presta atención plena cuando otros hablan, sin interrumpir.',
+                    'Sé claro y conciso: Evita la información innecesaria y ve al grano.',
+                    'Pide feedback: Pregunta cómo podrías mejorar tu comunicación en diferentes contextos.',
+                    'Desarrolla tu lenguaje no verbal: Presta atención a tu postura, contacto visual y gestos.'
+                ],
+                'Resolución de Problemas': [
+                    'Define el problema: Asegúrate de entender la raíz del problema antes de buscar soluciones.',
+                    'Brainstorming de soluciones: Genera múltiples ideas, incluso las "locas", antes de descartar.',
+                    'Análisis causa-raíz: Utiliza técnicas como los "5 porqués" para profundizar.',
+                    'Aprende de la experiencia: Reflexiona sobre problemas pasados y cómo los resolviste (o no).'
+                ],
+                'Gestión del Tiempo y Productividad': [
+                    'Prioriza tareas: Usa la Matriz de Eisenhower (urgente/importante) o similar.',
+                    'Elimina distracciones: Identifica y minimiza lo que te interrumpe (notificaciones, redes sociales).',
+                    'Usa herramientas: Prueba aplicaciones de gestión de tareas o calendarios digitales.',
+                    'Bloquea tiempo: Asigna bloques específicos en tu calendario para tareas importantes.'
+                ],
+                'Uso de Herramientas Digitales': [
+                    'Explora tutoriales: Muchos softwares tienen videos o guías de uso que te ayudarán.',
+                    'No tengas miedo de experimentar: Haz clic y explora las opciones, la práctica hace al maestro.',
+                    'Pregunta a tus compañeros: Seguro hay alguien en tu equipo que domina esa herramienta.',
+                    'Sigue cursos online: Plataformas como Coursera o LinkedIn Learning ofrecen cursos gratuitos o de pago.'
+                ],
+                'Liderazgo y Colaboración': [
+                    'Ofrece tu ayuda: Busca activamente oportunidades para apoyar a tus compañeros.',
+                    'Sé empático: Intenta entender las perspectivas de los demás.',
+                    'Celebra los éxitos del equipo: Reconoce el trabajo duro y los logros colectivos.',
+                    'Practica el feedback constructivo: Da y recibe comentarios de manera que impulse el crecimiento.'
+                ]
+            };
+
+            const categoriesSortedByScore = Object.entries(scores).sort((a, b) => a[1] - b[1]);
+
+            categoriesSortedByScore.forEach(([category, score]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.classList.add('recommendations-category');
+
+                const title = document.createElement('h3');
+                title.textContent = `Recomendaciones para ${category} (Tu puntaje: ${score.toFixed(1)}/10)`;
+                categoryDiv.appendChild(title);
+
+                const ul = document.createElement('ul');
+                const recommendationsForCategory = allRecommendations[category] || [];
+
+                // Si el puntaje es bajo (ej. <= 5), mostrar todas las recomendaciones.
+                // Si es medio (ej. >5 y <=7), mostrar algunas.
+                // Si es alto (ej. >7), el mensaje puede ser más de "mantener y potenciar".
+                let recsToShow;
+                if (score <= 5) {
+                    recsToShow = recommendationsForCategory;
+                } else if (score > 5 && score <= 7.5) {
+                    recsToShow = recommendationsForCategory.slice(0, 3); // Mostrar las primeras 3
+                } else {
+                    recsToShow = [`¡Excelente desempeño en ${category}! Continúa aplicando estas habilidades y busca oportunidades para mentorizar a otros.`];
+                }
+
+
+                recsToShow.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    ul.appendChild(li);
+                });
+                categoryDiv.appendChild(ul);
+                recommendationsDiv.appendChild(categoryDiv);
+            });
+        }
+    </script>
+</body>
+</html>
